@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Friend Profiler</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f0f2f5;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      #login-screen {
+        text-align: center;
+        margin-top: 100px;
+      }
+
+      .friend-item {
+        background: white;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      button {
+        background: #1877f2;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none; /* Start hidden */
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 500px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        box-sizing: border-box;
+      }
+
+      .logout-btn {
+        background: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Login Screen -->
+    <div id="login-screen">
+      <h1>Friend Profiler</h1>
+      <p>Log in with Facebook to get started</p>
+      <div
+        class="fb-login-button"
+        data-size="large"
+        data-button-type="continue_with"
+        data-layout="default"
+        data-auto-logout-link="false"
+        data-use-continue-as="false"
+        data-onlogin="checkLoginState"
+      ></div>
+
+      <!-- Test button since Facebook isn't set up yet -->
+      <div style="margin-top: 20px">
+        <button onclick="testWithDummyData()" style="background: #28a745">
+          🚀 Test App Without Facebook
+        </button>
+        <p style="font-size: 12px; color: #666; margin-top: 5px">
+          Use this to test the app while we set up Facebook
+        </p>
+      </div>
+    </div>
+
+    <!-- Main App (hidden until login) -->
+    <div id="app-screen" class="hidden">
+      <div
+        style="
+          display: flex;
+          justify-content: between;
+          align-items: center;
+          margin-bottom: 20px;
+        "
+      >
+        <h1 style="margin: 0">Your Friends</h1>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+      </div>
+      <div id="friend-list">
+        <!-- Friends will appear here -->
+      </div>
+    </div>
+
+    <!-- Popup form for profiling friends -->
+    <div id="profile-modal" class="modal">
+      <div class="modal-content">
+        <h2>Profile Your Friend</h2>
+        <form id="profile-form">
+          <div class="form-group">
+            <label>Full Name:</label>
+            <input type="text" id="full-name" required />
+          </div>
+          <div class="form-group">
+            <label>Address:</label>
+            <input type="text" id="address" />
+          </div>
+          <div class="form-group">
+            <label>Date of Birth:</label>
+            <input type="date" id="dob" />
+          </div>
+          <div style="display: flex; gap: 10px; margin-top: 20px">
+            <button type="submit">Save Information</button>
+            <button type="button" onclick="closeModal()" class="logout-btn">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Facebook SDK -->
+    <script
+      async
+      defer
+      crossorigin="anonymous"
+      src="https://connect.facebook.net/en_US/sdk.js"
+    ></script>
+
+    <script>
+      // Simple modal functions that work immediately
+      function openProfileModal(friendId, friendName) {
+        document.getElementById("full-name").value = friendName;
+        document.getElementById("profile-modal").style.display = "flex";
+      }
+
+      function closeModal() {
+        document.getElementById("profile-modal").style.display = "none";
+        document.getElementById("full-name").value = "";
+        document.getElementById("address").value = "";
+        document.getElementById("dob").value = "";
+      }
+
+      // Test with dummy data (since Facebook isn't set up)
+      function testWithDummyData() {
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("app-screen").classList.remove("hidden");
+
+        // Create dummy friends for testing
+        const dummyFriends = [
+          { id: "1", name: "Bat Erdene" },
+          { id: "2", name: "Tsetseg Gansukh" },
+          { id: "3", name: "Bold Khulan" },
+          { id: "4", name: "Saran Nergui" },
+        ];
+
+        displayFriends(dummyFriends);
+      }
+
+      // Show friends list
+      function displayFriends(friends) {
+        const container = document.getElementById("friend-list");
+        container.innerHTML = "";
+
+        friends.forEach((friend) => {
+          const friendDiv = document.createElement("div");
+          friendDiv.className = "friend-item";
+          friendDiv.innerHTML = `
+                    <div>
+                        <strong>${friend.name}</strong>
+                    </div>
+                    <button onclick="openProfileModal('${friend.id}', '${friend.name}')">
+                        Fill Info
+                    </button>
+                `;
+          container.appendChild(friendDiv);
+        });
+      }
+
+      // Save friend information
+      document
+        .getElementById("profile-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const fullName = document.getElementById("full-name").value;
+          const address = document.getElementById("address").value;
+          const dob = document.getElementById("dob").value;
+
+          alert(
+            "✅ Saved Successfully!\n\n" +
+              "Name: " +
+              fullName +
+              "\n" +
+              "Address: " +
+              (address || "Not provided") +
+              "\n" +
+              "Date of Birth: " +
+              (dob || "Not provided")
+          );
+
+          closeModal();
+        });
+
+      // Logout
+      function logout() {
+        document.getElementById("app-screen").classList.add("hidden");
+        document.getElementById("login-screen").classList.remove("hidden");
+      }
+
+      // Facebook functions (will work after we set up the Facebook App)
+
+      window.fbAsyncInit = function () {
+        FB.init({
+          appId: "817191890720874",
+          cookie: true,
+          xfbml: true,
+          version: "v19.0",
+        });
+
+        FB.AppEvents.logPageView();
+      };
+
+      (function (d, s, id) {
+        var js,
+          fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {
+          return;
+        }
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+      })(document, "script", "facebook-jssdk");
+
+      function checkLoginState() {
+        // This will work after Facebook setup
+        alert("Facebook login will work after we set up the Facebook App");
+      }
+    </script>
+  </body>
+</html>
