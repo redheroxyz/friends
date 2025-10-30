@@ -88,8 +88,8 @@
   <body>
     <!-- Login Screen -->
     <div id="login-screen">
-      <h1>Friend Profiler</h1>
-      <p>Log in with Facebook to get started</p>
+      <h1>Монголын Ардчилсан Холбоо</h1>
+      <p>Facebook-р нэвтрэх</p>
       <div
         class="fb-login-button"
         data-size="large"
@@ -121,8 +121,8 @@
           margin-bottom: 20px;
         "
       >
-        <h1 style="margin: 0">Your Friends</h1>
-        <button onclick="logout()" class="logout-btn">Logout</button>
+        <h1 style="margin: 0">Таны Найзууд</h1>
+        <button onclick="logout()" class="logout-btn">Гарах</button>
       </div>
       <div id="friend-list">
         <!-- Friends will appear here -->
@@ -132,24 +132,24 @@
     <!-- Popup form for profiling friends -->
     <div id="profile-modal" class="modal">
       <div class="modal-content">
-        <h2>Profile Your Friend</h2>
+        <h2>Найзын мэдээлэл</h2>
         <form id="profile-form">
           <div class="form-group">
-            <label>Full Name:</label>
+            <label>Бүтэн нэр:</label>
             <input type="text" id="full-name" required />
           </div>
           <div class="form-group">
-            <label>Address:</label>
+            <label>Хаяг:</label>
             <input type="text" id="address" />
           </div>
           <div class="form-group">
-            <label>Date of Birth:</label>
+            <label>Төрсөн огноо:</label>
             <input type="date" id="dob" />
           </div>
           <div style="display: flex; gap: 10px; margin-top: 20px">
-            <button type="submit">Save Information</button>
+            <button type="submit">Хадгалах</button>
             <button type="button" onclick="closeModal()" class="logout-btn">
-              Cancel
+              Цуцлах
             </button>
           </div>
         </form>
