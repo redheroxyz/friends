@@ -165,7 +165,9 @@
     ></script>
 
     <script>
-      // Simple modal functions that work immediately
+      let currentUser = null;
+
+      // Simple modal functions
       function openProfileModal(friendId, friendName) {
         document.getElementById("full-name").value = friendName;
         document.getElementById("profile-modal").style.display = "flex";
@@ -178,17 +180,15 @@
         document.getElementById("dob").value = "";
       }
 
-      // Test with dummy data (since Facebook isn't set up)
+      // Test with dummy data
       function testWithDummyData() {
         document.getElementById("login-screen").classList.add("hidden");
         document.getElementById("app-screen").classList.remove("hidden");
 
-        // Create dummy friends for testing
         const dummyFriends = [
           { id: "1", name: "Bat Erdene" },
           { id: "2", name: "Tsetseg Gansukh" },
           { id: "3", name: "Bold Khulan" },
-          { id: "4", name: "Saran Nergui" },
         ];
 
         displayFriends(dummyFriends);
@@ -203,13 +203,13 @@
           const friendDiv = document.createElement("div");
           friendDiv.className = "friend-item";
           friendDiv.innerHTML = `
-                    <div>
-                        <strong>${friend.name}</strong>
-                    </div>
-                    <button onclick="openProfileModal('${friend.id}', '${friend.name}')">
-                        Fill Info
-                    </button>
-                `;
+                  <div>
+                      <strong>${friend.name}</strong>
+                  </div>
+                  <button onclick="openProfileModal('${friend.id}', '${friend.name}')">
+                      Fill Info
+                  </button>
+              `;
           container.appendChild(friendDiv);
         });
       }
@@ -245,34 +245,79 @@
         document.getElementById("login-screen").classList.remove("hidden");
       }
 
-      // Facebook functions (will work after we set up the Facebook App)
-
+      // FACEBOOK LOGIN FUNCTIONS - IMPROVED VERSION
       window.fbAsyncInit = function () {
+        console.log("Facebook SDK loaded");
+
         FB.init({
-          appId: "817191890720874",
+          appId: "817191890720874", // MAKE SURE THIS IS CORRECT!
           cookie: true,
           xfbml: true,
           version: "v19.0",
         });
 
-        FB.AppEvents.logPageView();
+        console.log("Facebook SDK initialized");
+
+        // Check current login status
+        FB.getLoginStatus(function (response) {
+          console.log("Current login status:", response.status);
+          if (response.status === "connected") {
+            handleConnectedUser(response);
+          }
+        });
       };
 
-      (function (d, s, id) {
-        var js,
-          fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) {
-          return;
-        }
-        js = d.createElement(s);
-        js.id = id;
-        js.src = "https://connect.facebook.net/en_US/sdk.js";
-        fjs.parentNode.insertBefore(js, fjs);
-      })(document, "script", "facebook-jssdk");
-
       function checkLoginState() {
-        // This will work after Facebook setup
-        alert("Facebook login will work after we set up the Facebook App");
+        console.log("Login button clicked");
+        FB.getLoginStatus(function (response) {
+          console.log("Login status after click:", response);
+          if (response.status === "connected") {
+            handleConnectedUser(response);
+          } else {
+            // Try to log the user in
+            FB.login(
+              function (response) {
+                console.log("FB.login response:", response);
+                if (response.status === "connected") {
+                  handleConnectedUser(response);
+                } else {
+                  console.log(
+                    "User cancelled login or did not fully authorize."
+                  );
+                }
+              },
+              { scope: "public_profile,user_friends" }
+            );
+          }
+        });
+      }
+
+      function handleConnectedUser(response) {
+        console.log("User connected successfully!", response);
+        currentUser = response.authResponse.userID;
+
+        // Hide login screen, show app screen
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("app-screen").classList.remove("hidden");
+
+        // Load user's friends
+        loadFacebookFriends();
+      }
+
+      function loadFacebookFriends() {
+        console.log("Loading Facebook friends...");
+        FB.api("/me/friends", function (response) {
+          console.log("Friends API response:", response);
+          if (response && !response.error) {
+            displayFriends(response.data);
+          } else {
+            console.error("Error loading friends:", response.error);
+            // Show dummy data for testing
+            displayFriends([
+              { id: "1", name: "Test Friend (Real friends not available yet)" },
+            ]);
+          }
+        });
       }
     </script>
   </body>
